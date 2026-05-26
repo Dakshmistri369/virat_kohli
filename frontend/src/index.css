@@ -380,8 +380,7 @@ h1, h2, h3, h4 {
   width: 320px;
   height: 440px;
   border-radius: 20px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
+  background: #08080a;
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-premium);
   position: relative;
@@ -393,11 +392,12 @@ h1, h2, h3, h4 {
 .jersey-glass {
   width: 100%;
   height: 100%;
-  padding: 2rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transform-style: preserve-3d;
+  position: relative;
 }
 
 .card-shine {
@@ -415,6 +415,9 @@ h1, h2, h3, h4 {
   justify-content: space-between;
   align-items: center;
   transform: translateZ(30px);
+  padding: 1.5rem 1.5rem 0.5rem;
+  position: relative;
+  z-index: 3;
 }
 
 .jersey-brand span {
@@ -437,24 +440,40 @@ h1, h2, h3, h4 {
 }
 
 .jersey-image-container {
-  height: 220px;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transform: translateZ(50px);
-  border-radius: 12px;
+  height: 100%;
+  transform: translateZ(10px);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  border: none;
 }
 
 .jersey-card-photo {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 35%;
+  object-position: center 25%;
   transition: transform 0.5s ease;
+}
+
+.jersey-image-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 6, 8, 0.7) 0%,
+    rgba(6, 6, 8, 0) 30%,
+    rgba(6, 6, 8, 0) 50%,
+    rgba(6, 6, 8, 0.95) 90%,
+    #060608 100%
+  );
+  pointer-events: none;
 }
 
 .jersey-3d-card:hover .jersey-card-photo {
@@ -463,11 +482,14 @@ h1, h2, h3, h4 {
 
 .jersey-details {
   text-align: center;
-  transform: translateZ(25px);
+  transform: translateZ(35px);
+  padding: 0.5rem 1.5rem 2rem;
+  position: relative;
+  z-index: 3;
 }
 
 .jersey-title {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 2px;
   color: white;
@@ -477,7 +499,7 @@ h1, h2, h3, h4 {
 
 .jersey-desc {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .glow-bar {
@@ -1527,6 +1549,21 @@ h1, h2, h3, h4 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Mobile Menu Toggle button style */
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 110;
+  transition: var(--transition-smooth);
+}
+
+.mobile-menu-toggle:hover {
+  color: var(--primary-red);
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1024px) {
   .hero-grid-container {
@@ -1579,11 +1616,43 @@ h1, h2, h3, h4 {
 }
 
 @media (max-width: 768px) {
-  .nav-links {
-    display: none; /* Can expand to mobile menu or leave hidden as secondary list */
+  .mobile-menu-toggle {
+    display: block;
   }
+  
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: rgba(6, 6, 8, 0.98);
+    backdrop-filter: blur(15px);
+    border-left: 1px solid var(--border-light);
+    padding: 6rem 2rem 2rem;
+    gap: 1.8rem;
+    transition: right 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 100;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .nav-links.mobile-active {
+    right: 0;
+  }
+
+  .nav-links a {
+    font-size: 1.1rem;
+    width: 100%;
+    display: block;
+  }
+
   .hero-main-title {
-    font-size: 2.8rem;
+    font-size: 2.6rem;
+  }
+  .runs-number {
+    font-size: 3.2rem;
   }
   .milestone-counts-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -1593,6 +1662,52 @@ h1, h2, h3, h4 {
   }
   .stats-sub-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-main-title {
+    font-size: 2.2rem;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+  .hero-action-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.8rem;
+  }
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  .jersey-3d-card {
+    width: 280px;
+    height: 385px;
+  }
+  .jersey-brand {
+    padding: 1.2rem 1.2rem 0.4rem;
+  }
+  .jersey-details {
+    padding: 0.4rem 1.2rem 1.5rem;
+  }
+  .jersey-title {
+    font-size: 1rem;
+  }
+  .runs-number {
+    font-size: 2.8rem;
+  }
+  .milestone-counts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .metric-quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stat-mini-card {
+    padding: 1.2rem;
+  }
+  .section-header h2 {
+    font-size: 1.8rem;
   }
 }
 

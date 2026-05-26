@@ -1,12 +1,14 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import HeroSection from './components/HeroSection';
 import RecordsPanel from './components/RecordsPanel';
 import JerseyShowcase from './components/JerseyShowcase';
 import ThreeDCarousel from './components/ThreeDCarousel';
 import MilestonesTimeline from './components/MilestonesTimeline';
 import TriviaQuiz from './components/TriviaQuiz';
+import { Menu, X } from 'lucide-react';
 
 function App() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const recordsRef = useRef(null);
   const galleryRef = useRef(null);
   const carouselRef = useRef(null);
@@ -14,6 +16,7 @@ function App() {
   const quizRef = useRef(null);
 
   const scrollToSection = (elementRef) => {
+    setIsMenuOpen(false);
     if (elementRef.current) {
       window.scrollTo({
         top: elementRef.current.offsetTop - 80, // Offset for navbar
@@ -27,11 +30,20 @@ function App() {
       {/* Navigation Header */}
       <header className="app-header">
         <nav className="nav-container">
-          <div className="logo-wrapper" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <div className="logo-wrapper" onClick={() => { setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
             <span className="logo-icon">👑</span>
             <span className="logo-text">KING<span className="text-red">KOHLI</span></span>
           </div>
-          <ul className="nav-links">
+          
+          <button 
+            className="mobile-menu-toggle" 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+
+          <ul className={`nav-links ${isMenuOpen ? 'mobile-active' : ''}`}>
             <li>
               <a href="#records" onClick={(e) => { e.preventDefault(); scrollToSection(recordsRef); }}>
                 Records
