@@ -8,7 +8,7 @@ const AudioPlayer = () => {
 
   useEffect(() => {
     // Create audio element
-    audioRef.current = new Audio('/audio/rcb-theme.mp3');
+    audioRef.current = new Audio('/audio/rcb_2020_anthem.mp3');
     audioRef.current.loop = true;
     audioRef.current.volume = 0.4; // 40% volume
 
