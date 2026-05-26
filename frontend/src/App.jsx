@@ -5,6 +5,7 @@ import JerseyShowcase from './components/JerseyShowcase';
 import ThreeDCarousel from './components/ThreeDCarousel';
 import MilestonesTimeline from './components/MilestonesTimeline';
 import TriviaQuiz from './components/TriviaQuiz';
+import AudioPlayer from './components/AudioPlayer';
 import { Menu, X } from 'lucide-react';
 
 function App() {
@@ -148,6 +149,7 @@ function App() {
           © {new Date().getFullYear()} Kohli Legacy Portal. Designed for ultimate fans in premium RCB Crimson.
         </p>
       </footer>
+      <AudioPlayer />
     </>
   );
 }
