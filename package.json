@@ -1,0 +1,13 @@
+{
+  "name": "virat-kohli-portal-root",
+  "version": "1.0.0",
+  "description": "Root setup for the Virat Kohli MERN stack portal",
+  "scripts": {
+    "install-backend": "npm install --prefix backend",
+    "install-frontend": "npm install --prefix frontend",
+    "install-all": "npm run install-backend && npm run install-frontend",
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm run dev --prefix frontend",
+    "dev": "npx concurrently \"npm run backend\" \"npm run frontend\""
+  }
+}
