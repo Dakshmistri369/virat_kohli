@@ -1594,6 +1594,24 @@ h1, h2, h3, h4 {
   display: flex;
   flex-direction: column;
   align-items: center;
+  --card-width: 220px;
+  --card-height: 310px;
+  --tz-distance: 280px;
+}
+
+.drag-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--primary-gold);
+  background: rgba(236, 178, 46, 0.06);
+  border: 1px solid rgba(236, 178, 46, 0.12);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  margin-top: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .carousel-view-port {
@@ -1605,37 +1623,44 @@ h1, h2, h3, h4 {
   perspective: 1200px;
   position: relative;
   margin-top: 3rem;
+  cursor: grab;
+  user-select: none;
+}
+
+.carousel-view-port:active {
+  cursor: grabbing;
 }
 
 .carousel-3d-scene {
-  width: 220px;
-  height: 300px;
+  width: var(--card-width);
+  height: var(--card-height);
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .carousel-card-3d {
   position: absolute;
   top: 0;
   left: 0;
-  width: 220px;
-  height: 300px;
+  width: var(--card-width);
+  height: var(--card-height);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1.5rem;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 1.2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transform-style: preserve-3d;
-  transition: all 0.5s ease;
-  backface-visibility: visible;
+  transition: transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  backface-visibility: hidden;
+  user-select: none;
 }
 
 .carousel-card-3d.hovered {
-  transform: translateZ(30px) scale(1.08) !important;
-  box-shadow: 0 25px 45px rgba(255, 30, 39, 0.15);
+  transform: translateZ(35px) scale(1.06) !important;
+  box-shadow: 0 25px 45px rgba(255, 30, 39, 0.25);
   border-color: var(--primary-red) !important;
 }
 
@@ -1656,33 +1681,45 @@ h1, h2, h3, h4 {
 }
 
 .card-3d-visual {
-  height: 120px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 1rem 0;
+  height: 130px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 0.8rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.carousel-svg {
+.card-kohli-image {
+  width: 100%;
   height: 100%;
-  width: auto;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+  object-fit: cover;
+  object-position: center 20%;
   transition: transform 0.5s ease;
 }
 
-.carousel-card-3d:hover .carousel-svg {
-  transform: scale(1.1) rotate(5deg);
+.carousel-card-3d:hover .card-kohli-image {
+  transform: scale(1.12);
+}
+
+.image-overlay-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .card-3d-body h4 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: white;
   margin-bottom: 0.3rem;
   font-weight: 700;
 }
 
 .card-3d-body p {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-secondary);
   line-height: 1.4;
 }
@@ -1730,4 +1767,45 @@ h1, h2, h3, h4 {
 
 .pulse-dot {
   animation: pulse-glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Mobile responsive override */
+@media (max-width: 768px) {
+  .carousel-container-outer {
+    --card-width: 170px;
+    --card-height: 255px;
+    --tz-distance: 190px;
+    padding: 4rem 1rem;
+  }
+  .carousel-view-port {
+    height: 340px;
+    margin-top: 1.5rem;
+  }
+  .card-3d-visual {
+    height: 100px;
+  }
+  .carousel-svg-fallback {
+    height: 80px;
+  }
+  .card-3d-body h4 {
+    font-size: 0.85rem;
+  }
+  .card-3d-body p {
+    font-size: 0.65rem;
+  }
+}
+
+.fallback-svg-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.carousel-svg-fallback {
+  height: 100px;
+  width: auto;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
 }
