@@ -12,8 +12,8 @@ const RecordsPanel = () => {
     const fetchRecords = async () => {
       try {
         setLoading(true);
-        // Point to backend server. If runs in production/local it resolves correctly
-        const response = await fetch('http://localhost:5000/api/records');
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const response = await fetch(`${apiBaseUrl}/api/records`);
         if (!response.ok) {
           throw new Error('Failed to fetch records');
         }
