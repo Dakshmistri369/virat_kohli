@@ -2,12 +2,14 @@ import { useRef } from 'react';
 import HeroSection from './components/HeroSection';
 import RecordsPanel from './components/RecordsPanel';
 import JerseyShowcase from './components/JerseyShowcase';
+import ThreeDCarousel from './components/ThreeDCarousel';
 import MilestonesTimeline from './components/MilestonesTimeline';
 import TriviaQuiz from './components/TriviaQuiz';
 
 function App() {
   const recordsRef = useRef(null);
   const galleryRef = useRef(null);
+  const carouselRef = useRef(null);
   const timelineRef = useRef(null);
   const quizRef = useRef(null);
 
@@ -38,6 +40,11 @@ function App() {
             <li>
               <a href="#gallery" onClick={(e) => { e.preventDefault(); scrollToSection(galleryRef); }}>
                 Jerseys
+              </a>
+            </li>
+            <li>
+              <a href="#library" onClick={(e) => { e.preventDefault(); scrollToSection(carouselRef); }}>
+                3D Library
               </a>
             </li>
             <li>
@@ -72,6 +79,11 @@ function App() {
           <JerseyShowcase />
         </div>
 
+        {/* 3D Rounding Carousel Library */}
+        <div id="library" ref={carouselRef}>
+          <ThreeDCarousel />
+        </div>
+
         {/* Interactive Chronological Timeline */}
         <div id="chronicles" ref={timelineRef}>
           <MilestonesTimeline />
@@ -101,6 +113,11 @@ function App() {
           <li>
             <a href="#gallery" onClick={(e) => { e.preventDefault(); scrollToSection(galleryRef); }}>
               RCB Jerseys
+            </a>
+          </li>
+          <li>
+            <a href="#library" onClick={(e) => { e.preventDefault(); scrollToSection(carouselRef); }}>
+              3D Library
             </a>
           </li>
           <li>
