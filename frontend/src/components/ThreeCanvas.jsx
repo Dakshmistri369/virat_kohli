@@ -3,9 +3,19 @@ import * as THREE from 'three';
 
 const ThreeCanvas = () => {
   const containerRef = useRef(null);
-  const [hoveredPoint, setHoveredPoint] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
     if (!containerRef.current) return;
 
     const width = containerRef.current.clientWidth;
@@ -39,7 +49,6 @@ const ThreeCanvas = () => {
     const darkGrey = new THREE.Color('#222225');
 
     for (let i = 0; i < particleCount; i++) {
-      // Golden spiral distribution (Fibonacci Sphere)
       const k = i + 0.5;
       const phi = Math.acos(1 - (2 * k) / particleCount);
       const theta = Math.PI * (1 + Math.sqrt(5)) * k;
@@ -54,7 +63,6 @@ const ThreeCanvas = () => {
       positions[i * 3 + 1] = y;
       positions[i * 3 + 2] = z;
 
-      // Color mix: red and gold particles
       const colorRatio = Math.random();
       let mixColor;
       if (colorRatio > 0.6) {
@@ -85,11 +93,11 @@ const ThreeCanvas = () => {
     const particleSystem = new THREE.Points(geometry, material);
     mainGroup.add(particleSystem);
 
-    // 2. Orbital Rings (glowing orbits representing different platforms: Tests, ODIs, T20Is, IPL)
+    // 2. Orbital Rings
     const ringCount = 4;
     const rings = [];
     const ringRadii = [3.5, 4.8, 6.2, 7.5];
-    const ringColors = ['#ffffff', '#00d2ff', '#ff1e27', '#ecb22e']; // Test (White), ODI (Blue), IPL/T20I (Red, Gold)
+    const ringColors = ['#ffffff', '#00d2ff', '#ff1e27', '#ecb22e'];
     
     ringRadii.forEach((radius, index) => {
       const ringGeom = new THREE.RingGeometry(radius - 0.02, radius + 0.02, 64);
@@ -102,14 +110,13 @@ const ThreeCanvas = () => {
       });
       const mesh = new THREE.Mesh(ringGeom, ringMat);
       
-      // Rotate randomly to create a complex orbital shell
       mesh.rotation.x = Math.random() * Math.PI;
       mesh.rotation.y = Math.random() * Math.PI;
       mainGroup.add(mesh);
       rings.push({ mesh, speed: 0.002 + index * 0.001 });
     });
 
-    // 3. Central Core (Glowing core)
+    // 3. Central Core
     const coreGeom = new THREE.SphereGeometry(1.5, 32, 32);
     const coreMat = new THREE.MeshBasicMaterial({
       color: '#ff1e27',
@@ -124,7 +131,7 @@ const ThreeCanvas = () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
-    // Point Light (representing core energy)
+    // Point Light
     const pointLight = new THREE.PointLight('#ff1e27', 1.5, 100);
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
@@ -140,7 +147,6 @@ const ThreeCanvas = () => {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       
-      // Normalized coordinates
       mouseX = (x / width) * 2 - 1;
       mouseY = -(y / height) * 2 + 1;
     };
@@ -152,16 +158,13 @@ const ThreeCanvas = () => {
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      // Rotate group naturally
       mainGroup.rotation.y += 0.002;
       mainGroup.rotation.x += 0.001;
 
-      // Rotate rings on their own speeds
       rings.forEach(r => {
         r.mesh.rotation.z += r.speed;
       });
 
-      // Smooth camera follow mouse
       targetX += (mouseX - targetX) * 0.05;
       targetY += (mouseY - targetY) * 0.05;
 
@@ -200,7 +203,20 @@ const ThreeCanvas = () => {
       coreGeom.dispose();
       coreMat.dispose();
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) {
+    return (
+      <div className="three-canvas-container fallback-css-gradient">
+        <div className="glow-orb orb-1"></div>
+        <div className="glow-orb orb-2"></div>
+        <div className="three-overlay-text">
+          <span>STATS UNIVERSE</span>
+          <p>Touch & Scroll to Explore</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
