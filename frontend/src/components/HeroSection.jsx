@@ -24,7 +24,7 @@ const HeroSection = ({ scrollToRecords, scrollToGallery }) => {
           </h1>
           
           <p className="hero-subtitle">
-            Experience the career statistics, historic records, and iconic battle armours of cricket's ultimate modern legend, Virat Kohli. Designed in deep crimson and black RCB theme.
+            "Self-belief and hard work will always earn you success. 🏏🔥 Whatever you want to do, do it with full passion, work extremely hard, and don't look anywhere else! 🚀👑 The comeback is always greater than the setback." 🦁💪
           </p>
 
           <div className="hero-action-buttons">
