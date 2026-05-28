@@ -61,7 +61,7 @@ const JerseyCard = () => {
           
           <div className="jersey-image-container">
             <img 
-              src="/images/king-armour.png" 
+              src="/images/image.jpg" 
               alt="King's Armour" 
               className="jersey-card-photo"
               loading="eager"
