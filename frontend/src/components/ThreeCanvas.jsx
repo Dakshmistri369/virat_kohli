@@ -1,23 +1,155 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 const ThreeCanvas = () => {
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      // Gentle parallax effect (moves slightly in opposition to mouse)
-      const x = -(e.clientX / window.innerWidth - 0.5) * 15;
-      const y = -(e.clientY / window.innerHeight - 0.5) * 15;
-      setMouseOffset({ x, y });
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    const resize = () => {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const W = () => canvas.width;
+    const H = () => canvas.height;
+
+    // Particles
+    const particles = [];
+    const COLORS = ['#E32636', '#FFD700', '#CC2030', '#FFC200', '#FF4444', '#FFE566'];
+    for (let i = 0; i < 320; i++) {
+      particles.push({
+        x: Math.random(),
+        y: Math.random(),
+        z: Math.random() * 2 + 0.3,
+        size: Math.random() * 3.5 + 1,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        vx: (Math.random() - 0.5) * 0.0003,
+        vy: (Math.random() - 0.5) * 0.0003,
+        shape: 'square',
+        alpha: Math.random() * 0.5 + 0.4,
+      });
+    }
+
+    // Orbital rings — 3D perspective
+    const rings = [
+      { rx: 0.36, ry: 0.11, cx: 0.55, cy: 0.48, tilt: 0.22, speed: 0.003, color: '#8B1010', lw: 1.2, phase: 0 },
+      { rx: 0.28, ry: 0.08, cx: 0.52, cy: 0.50, tilt: -0.15, speed: -0.002, color: '#6B6B00', lw: 0.9, phase: 1.2 },
+      { rx: 0.20, ry: 0.065, cx: 0.53, cy: 0.47, tilt: 0.38, speed: 0.0045, color: '#333', lw: 0.8, phase: 2.4 },
+    ];
+
+    // Glowing orb at center
+    const orb = { cx: 0.54, cy: 0.49 };
+
+    let t = 0;
+    const draw = () => {
+      const w = W(), h = H();
+      if (w === 0 || h === 0) {
+        animationFrameId = requestAnimationFrame(draw);
+        return;
+      }
+      ctx.clearRect(0, 0, w, h);
+
+      // Deep dark bg
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0, 0, w, h);
+
+      // Subtle red vignette
+      const vg = ctx.createRadialGradient(w * 0.54, h * 0.5, h * 0.05, w * 0.54, h * 0.5, h * 0.85);
+      vg.addColorStop(0, 'rgba(80,0,0,0.0)');
+      vg.addColorStop(1, 'rgba(0,0,0,0.82)');
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, w, h);
+
+      // 3D glowing orb
+      const ox = orb.cx * w, oy = orb.cy * h;
+      const orbR = Math.min(w, h) * 0.18;
+      const orbG = ctx.createRadialGradient(ox - orbR * 0.2, oy - orbR * 0.15, orbR * 0.05, ox, oy, orbR);
+      orbG.addColorStop(0, 'rgba(160,10,10,0.85)');
+      orbG.addColorStop(0.45, 'rgba(100,5,5,0.6)');
+      orbG.addColorStop(0.78, 'rgba(50,0,0,0.3)');
+      orbG.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath();
+      ctx.arc(ox, oy, orbR, 0, Math.PI * 2);
+      ctx.fillStyle = orbG;
+      ctx.fill();
+
+      // Particles (behind rings partially)
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < -0.05) p.x = 1.05;
+        if (p.x > 1.05) p.x = -0.05;
+        if (p.y < -0.05) p.y = 1.05;
+        if (p.y > 1.05) p.y = -0.05;
+
+        const px = p.x * w, py = p.y * h;
+        const sz = p.size * p.z * (w / 700);
+        ctx.globalAlpha = p.alpha * 0.85;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(px - sz / 2, py - sz / 2, sz, sz);
+      }
+      ctx.globalAlpha = 1;
+
+      // 3D elliptical orbital rings
+      for (const ring of rings) {
+        ring.phase += ring.speed;
+        const cx = ring.cx * w, cy = ring.cy * h;
+        const rx = ring.rx * w, ry = ring.ry * h;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(ring.tilt);
+
+        // Draw ellipse ring with perspective depth
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = ring.color;
+        ctx.lineWidth = ring.lw;
+        ctx.globalAlpha = 0.75;
+        ctx.stroke();
+
+        // Small orbiting dot on the ring
+        const dotAngle = ring.phase;
+        const dx = Math.cos(dotAngle) * rx;
+        const dy = Math.sin(dotAngle) * ry;
+        ctx.beginPath();
+        ctx.arc(dx, dy, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = ring.color === '#8B1010' ? '#E32636' : '#FFD700';
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      }
+
+      // Highlight flare at top of orb
+      ctx.beginPath();
+      ctx.ellipse(ox - orbR * 0.18, oy - orbR * 0.28, orbR * 0.22, orbR * 0.1, -0.4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,220,220,0.1)';
+      ctx.fill();
+
+      t += 0.008;
+      animationFrameId = requestAnimationFrame(draw);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
-    <div 
-      className="hero-static-background"
+    <canvas 
+      ref={canvasRef} 
       style={{
         width: '100%',
         height: '100%',
@@ -25,40 +157,10 @@ const ThreeCanvas = () => {
         top: 0,
         left: 0,
         zIndex: 0,
-        overflow: 'hidden',
-        background: '#060608'
+        display: 'block',
+        pointerEvents: 'none'
       }}
-    >
-      <div 
-        style={{
-          width: '108%',
-          height: '108%',
-          backgroundImage: 'url(/images/image.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 15%',
-          opacity: 0.38,
-          filter: 'grayscale(10%) contrast(110%) brightness(70%)',
-          position: 'absolute',
-          top: '-4%',
-          left: '-4%',
-          transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0)`,
-          transition: 'transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-        }}
-      />
-      {/* Intense dark radial vignette mask for maximum readability and drama */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-          background: 'radial-gradient(circle at 50% 50%, rgba(227, 38, 54, 0.12) 0%, rgba(6, 6, 8, 0.7) 65%, rgba(6, 6, 8, 0.98) 100%)',
-          zIndex: 1
-        }}
-      />
-    </div>
+    />
   );
 };
 
