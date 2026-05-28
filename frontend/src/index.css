@@ -426,6 +426,19 @@ h1, h2, h3, h4 {
   letter-spacing: 1.5px;
 }
 
+.jersey-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rcb-logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(236, 178, 46, 0.5));
+}
+
 .gold-badge {
   background: linear-gradient(135deg, #ffe683, #e5b842);
   color: #000;

@@ -55,7 +55,14 @@ const JerseyCard = () => {
           }} />
           
           <div className="jersey-brand">
-            <span className="gold-text">RCB OFFICAL</span>
+            <div className="jersey-logo-container">
+              <img 
+                src="/images/rcb-logo.svg" 
+                alt="RCB Logo" 
+                className="rcb-logo-img" 
+              />
+              <span className="gold-text">RCB OFFICIAL</span>
+            </div>
             <div className="gold-badge">18</div>
           </div>
           
