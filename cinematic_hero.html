@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virat Kohli RCB Cricket Legacy | Cinematic 3D Experience</title>
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Styling & Variables */
+    :root {
+      --primary-red: #E32636;
+      --primary-gold: #FFD700;
+      --bg-black: #000000;
+      --text-white: #ffffff;
+      --text-muted: #aaaaaa;
+      --transition-smooth: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-black);
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* WebGL Canvas Container */
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* GPU-Accelerated Red Vignette Overlay */
+    .vignette-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(20,0,2,0.3) 75%, rgba(0,0,0,0.95) 100%);
+      z-index: 2;
+    }
+
+    /* Hero Text Overlay Container */
+    .hero-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+      z-index: 10;
+      pointer-events: none; /* Let clicks pass through if needed, but select buttons explicitly */
+    }
+
+    .hero-content {
+      max-width: 800px;
+      pointer-events: auto; /* Enable hover/clicks on inner content */
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.2s;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.5rem 1.2rem;
+      background: rgba(227, 38, 54, 0.15);
+      border: 1px solid rgba(227, 38, 54, 0.4);
+      color: var(--primary-gold);
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border-radius: 50px;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(5px);
+    }
+
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 4.8rem;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ffffff 40%, var(--primary-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    }
+
+    h1 span {
+      color: var(--primary-red);
+      -webkit-text-fill-color: var(--primary-red);
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Actions & Buttons */
+    .cta-group {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.95rem 2.2rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary {
+      background: var(--primary-red);
+      color: var(--text-white);
+      border: 1px solid var(--primary-red);
+      box-shadow: 0 4px 20px rgba(227, 38, 54, 0.4);
+    }
+
+    .btn-primary:hover {
+      background: #ff3344;
+      border-color: #ff3344;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 25px rgba(227, 38, 54, 0.6);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary-gold);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      backdrop-filter: blur(5px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 215, 0, 0.1);
+      border-color: var(--primary-gold);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.2);
+    }
+
+    /* Interactive Instruction Overlay */
+    .interaction-prompt {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      z-index: 10;
+      pointer-events: none;
+      animation: pulse 2.5s infinite;
+    }
+
+    /* Keyframes */
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.9; }
+    }
+
+    /* Mobile overrides */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 3.2rem;
+      }
+      .subtitle {
+        font-size: 1.05rem;
+      }
+      .cta-group {
+        flex-direction: column;
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
+      }
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Background -->
+  <div id="canvas-container"></div>
+  <div class="vignette-overlay"></div>
+
+  <!-- Hero Content -->
+  <main class="hero-container">
+    <div class="hero-content">
+      <div class="badge">RCB LEGACY BOOK</div>
+      <h1>THE KING OF <span>CHINNASWAMY</span></h1>
+      <p class="subtitle">Witness the supreme 3D digital records, historic IPL jerseys, and statistical milestones of cricket's ultimate modern legend Virat Kohli.</p>
+      
+      <div class="cta-group">
+        <a href="#records" class="btn btn-primary" onclick="alert('Exploring Records...')">Explore Legacy</a>
+        <a href="#jerseys" class="btn btn-secondary" onclick="alert('Viewing Jerseys...')">View Armoury</a>
+      </div>
+    </div>
+  </main>
+
+  <div class="interaction-prompt">Move cursor to orbit space</div>
+
+  <!-- Include Three.js via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <script>
+    // 3D WebGL Scene Initialization
+    const container = document.getElementById('canvas-container');
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // 1. Setup Scene & Camera
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
+    camera.position.z = 15;
+
+    // 2. Setup Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Parent group for cursor tilting parallax
+    const mainGroup = new THREE.Group();
+    scene.add(mainGroup);
+
+    // 3. Lighting Setup forSpecular Highlights
+    const ambientLight = new THREE.AmbientLight(0x110202, 1.5);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight('#ffffff', 3.0);
+    dirLight.position.set(6, 6, 8);
+    scene.add(dirLight);
+
+    const pointLightRed = new THREE.PointLight('#E32636', 4.0, 35);
+    pointLightRed.position.set(0, 0, 0);
+    scene.add(pointLightRed);
+
+    const pointLightGold = new THREE.PointLight('#FFD700', 2.5, 30);
+    pointLightGold.position.set(-3, 2, 4);
+    scene.add(pointLightGold);
+
+    // 4. Floating / Drifting Square Pixel Particles (Exactly 350)
+    const particleCount = 350;
+    const particleGeometry = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleColors = new Float32Array(particleCount * 3);
+    const particleData = [];
+
+    const colorCrimson = new THREE.Color('#E32636');
+    const colorGold = new THREE.Color('#FFD700');
+    const colorDarkRed = new THREE.Color('#2e0004');
+
+    for (let i = 0; i < particleCount; i++) {
+      // Random coordinates inside a bounding box
+      const x = (Math.random() - 0.5) * 22;
+      const y = (Math.random() - 0.5) * 22;
+      const z = (Math.random() - 0.5) * 20;
+
+      particlePositions[i * 3] = x;
+      particlePositions[i * 3 + 1] = y;
+      particlePositions[i * 3 + 2] = z;
+
+      // Linear drift data
+      particleData.push({
+        driftX: (Math.random() - 0.5) * 0.010,
+        driftY: (0.012 + Math.random() * 0.016), // upward drift
+        driftZ: (Math.random() - 0.5) * 0.008
+      });
+
+      // Colors mix
+      const rand = Math.random();
+      let mixColor = colorDarkRed;
+      if (rand > 0.65) {
+        mixColor = colorGold;
+      } else if (rand > 0.25) {
+        mixColor = colorCrimson;
+      }
+
+      particleColors[i * 3] = mixColor.r;
+      particleColors[i * 3 + 1] = mixColor.g;
+      particleColors[i * 3 + 2] = mixColor.b;
+    }
+
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+    // Default point material renders as flat squares
+    const particleMaterial = new THREE.PointsMaterial({
+      size: 0.15,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+
+    const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+    mainGroup.add(particleSystem);
+
+    // 5. 3 Tilted 3D Elliptical Rings
+    const createEllipsePoints = (a, b, segments = 128) => {
+      const points = [];
+      for (let i = 0; i <= segments; i++) {
+        const theta = (i / segments) * Math.PI * 2;
+        const x = a * Math.cos(theta);
+        const y = b * Math.sin(theta);
+        points.push(new THREE.Vector3(x, y, 0));
+      }
+      return points;
+    };
+
+    const rings = [];
+    const ringSpecs = [
+      { a: 5.2, b: 3.2, color: '#E32636', rotX: 1.2, rotY: 0.4, speedZ: 0.006 },
+      { a: 6.5, b: 4.0, color: '#FFD700', rotX: -0.9, rotY: 0.7, speedZ: -0.005 },
+      { a: 7.8, b: 4.8, color: '#E32636', rotX: 0.4, rotY: -1.0, speedZ: 0.004 }
+    ];
+
+    ringSpecs.forEach((spec) => {
+      const points = createEllipsePoints(spec.a, spec.b);
+      const ringGeom = new THREE.BufferGeometry().setFromPoints(points);
+      
+      const ringMat = new THREE.LineBasicMaterial({
+        color: spec.color,
+        transparent: true,
+        opacity: 0.48,
+        blending: THREE.AdditiveBlending
+      });
+
+      const lineLoop = new THREE.LineLoop(ringGeom, ringMat);
+      lineLoop.rotation.x = spec.rotX;
+      lineLoop.rotation.y = spec.rotY;
+      
+      mainGroup.add(lineLoop);
+      rings.push({
+        mesh: lineLoop,
+        speedZ: spec.speedZ
+      });
+    });
+
+    // 6. Central Glowing Orb with intense radial glow (intensity: 7/10)
+    const coreGeometry = new THREE.SphereGeometry(1.6, 64, 64);
+    const coreMaterial = new THREE.MeshPhongMaterial({
+      color: '#E32636',
+      emissive: '#250002',
+      specular: '#FFD700', // Gold highlight reflection
+      shininess: 95,
+      transparent: true,
+      opacity: 0.95
+    });
+    const coreOrb = new THREE.Mesh(coreGeometry, coreMaterial);
+    mainGroup.add(coreOrb);
+
+    // Dynamic glow shells for deep radial aura
+    const glowShells = [];
+    const glowSpecs = [
+      { size: 1.8, color: '#FFD700', baseOpacity: 0.42 }, // gold inner glow
+      { size: 2.3, color: '#E32636', baseOpacity: 0.28 }, // crimson core glow
+      { size: 3.0, color: '#E32636', baseOpacity: 0.14 }  // soft red corona
+    ];
+
+    glowSpecs.forEach((spec) => {
+      const geom = new THREE.SphereGeometry(spec.size, 32, 32);
+      const mat = new THREE.MeshBasicMaterial({
+        color: spec.color,
+        transparent: true,
+        opacity: spec.baseOpacity,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide
+      });
+      const shellMesh = new THREE.Mesh(geom, mat);
+      mainGroup.add(shellMesh);
+      glowShells.push({
+        mesh: shellMesh,
+        baseOpacity: spec.baseOpacity
+      });
+    });
+
+    // 7. Interactive Parallax Control
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+
+    // 8. Animation Loop (60fps, Rotation speed level: 4/10)
+    const rotationSpeedLevel = 0.4; // 4/10
+    const clock = new THREE.Clock();
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      const time = clock.getElapsedTime();
+
+      // Tilts and slow rotations of the space
+      mainGroup.rotation.y = time * 0.03 * rotationSpeedLevel + targetX * 0.25;
+      mainGroup.rotation.x = 0.08 + targetY * 0.15;
+
+      // Particle Drift simulation
+      const positionsArr = particleGeometry.attributes.position.array;
+      for (let i = 0; i < particleCount; i++) {
+        const data = particleData[i];
+        
+        positionsArr[i * 3] += data.driftX;
+        positionsArr[i * 3 + 1] += data.driftY;
+        positionsArr[i * 3 + 2] += data.driftZ;
+
+        // Wrap around boundaries
+        if (positionsArr[i * 3] > 11) positionsArr[i * 3] = -11;
+        if (positionsArr[i * 3] < -11) positionsArr[i * 3] = 11;
+        if (positionsArr[i * 3 + 1] > 11) positionsArr[i * 3 + 1] = -11;
+        if (positionsArr[i * 3 + 1] < -11) positionsArr[i * 3 + 1] = 11;
+        if (positionsArr[i * 3 + 2] > 10) positionsArr[i * 3 + 2] = -10;
+        if (positionsArr[i * 3 + 2] < -10) positionsArr[i * 3 + 2] = 10;
+      }
+      particleGeometry.attributes.position.needsUpdate = true;
+
+      // Rotate Elliptical Orbits
+      rings.forEach((ring) => {
+        ring.mesh.rotation.z += ring.speedZ * rotationSpeedLevel;
+      });
+
+      // Orb & Glow Pulse
+      const corePulse = 1.0 + Math.sin(time * 1.5) * 0.04;
+      coreOrb.scale.set(corePulse, corePulse, corePulse);
+
+      glowShells.forEach((shell, index) => {
+        const wave = Math.sin(time * 1.8 + index * 0.5);
+        const scaleVal = 1.0 + wave * 0.06;
+        shell.mesh.scale.set(scaleVal, scaleVal, scaleVal);
+        shell.mesh.material.opacity = shell.baseOpacity * (0.85 + wave * 0.15);
+      });
+
+      // Light pulsing
+      pointLightRed.intensity = 3.0 + Math.sin(time * 2.0) * 0.6;
+      pointLightGold.intensity = 1.8 + Math.cos(time * 1.6) * 0.4;
+
+      // Smooth mouse interpolation
+      targetX += (mouseX - targetX) * 0.045;
+      targetY += (mouseY - targetY) * 0.045;
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    // 9. Resize Handling
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+  </script>
+</body>
+</html>

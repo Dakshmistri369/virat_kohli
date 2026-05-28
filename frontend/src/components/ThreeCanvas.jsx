@@ -25,201 +25,181 @@ const ThreeCanvas = () => {
     const scene = new THREE.Scene();
 
     // Camera
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
     camera.position.z = 15;
 
-    // Renderer
+    // WebGL Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     containerRef.current.appendChild(renderer.domElement);
 
-    // Group to hold all objects
+    // Main parent group
     const mainGroup = new THREE.Group();
     scene.add(mainGroup);
 
-    // 1. Starry Cosmos Background (Subtle twinkling stars drifting in deep background)
-    const starCount = 500;
-    const starGeometry = new THREE.BufferGeometry();
-    const starPositions = new Float32Array(starCount * 3);
-    const starColors = new Float32Array(starCount * 3);
+    // 1. Lighting System (To render the specular highlights on the orb)
+    const ambientLight = new THREE.AmbientLight(0x1a0505, 1.2); // subtle warm base
+    scene.add(ambientLight);
 
-    for (let i = 0; i < starCount; i++) {
-      const u = Math.random();
-      const v = Math.random();
-      const theta = u * 2.0 * Math.PI;
-      const phi = Math.acos(2.0 * v - 1.0);
-      const r = 20 + Math.random() * 30; // deep background
+    const dirLight = new THREE.DirectionalLight('#ffffff', 3.0); // sharp source for specular highlight
+    dirLight.position.set(6, 6, 8);
+    scene.add(dirLight);
 
-      starPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      starPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      starPositions[i * 3 + 2] = r * Math.cos(phi);
+    const pointLightRed = new THREE.PointLight('#E32636', 3.5, 40); // vibrant crimson glow source
+    pointLightRed.position.set(0, 0, 0);
+    scene.add(pointLightRed);
 
-      // Mild colors: RCB Red, RCB Gold, Soft White
-      const rand = Math.random();
-      if (rand > 0.85) {
-        // Gold
-        starColors[i * 3] = 0.98;
-        starColors[i * 3 + 1] = 0.88;
-        starColors[i * 3 + 2] = 0.45;
-      } else if (rand > 0.70) {
-        // Red
-        starColors[i * 3] = 1.0;
-        starColors[i * 3 + 1] = 0.2;
-        starColors[i * 3 + 2] = 0.25;
-      } else {
-        // Soft white
-        starColors[i * 3] = 0.9;
-        starColors[i * 3 + 1] = 0.9;
-        starColors[i * 3 + 2] = 0.95;
-      }
-    }
+    const pointLightGold = new THREE.PointLight('#FFD700', 2.0, 30); // glowing gold highlights
+    pointLightGold.position.set(-3, 2, 3);
+    scene.add(pointLightGold);
 
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
-
-    const starMaterial = new THREE.PointsMaterial({
-      size: 0.08,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.5,
-      blending: THREE.AdditiveBlending
-    });
-
-    const starSystem = new THREE.Points(starGeometry, starMaterial);
-    scene.add(starSystem);
-
-    // 2. Breathing Particle Sphere (Foreground representation of runs/achievements)
-    const particleCount = 700;
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-    
-    const rcbRed = new THREE.Color('#ff1e27');
-    const rcbGold = new THREE.Color('#ecb22e');
-    const darkGrey = new THREE.Color('#333338');
-
+    // 2. 350 Floating/Drifting Square Pixel Particles
+    const particleCount = 350;
+    const particleGeometry = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleColors = new Float32Array(particleCount * 3);
     const particleData = [];
 
+    const colorCrimson = new THREE.Color('#E32636');
+    const colorGold = new THREE.Color('#FFD700');
+    const colorBlackishRed = new THREE.Color('#3a0008');
+
     for (let i = 0; i < particleCount; i++) {
-      // Golden spiral distribution (Fibonacci Sphere)
-      const k = i + 0.5;
-      const phi = Math.acos(1 - (2 * k) / particleCount);
-      const theta = Math.PI * (1 + Math.sqrt(5)) * k;
-      
-      const baseRadius = 6.2 + (Math.random() - 0.5) * 0.5;
-      
-      const x = baseRadius * Math.sin(phi) * Math.cos(theta);
-      const y = baseRadius * Math.sin(phi) * Math.sin(theta);
-      const z = baseRadius * Math.cos(phi);
+      // Spawn particles randomly in a large bounding box
+      const x = (Math.random() - 0.5) * 22;
+      const y = (Math.random() - 0.5) * 22;
+      const z = (Math.random() - 0.5) * 20;
 
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
+      particlePositions[i * 3] = x;
+      particlePositions[i * 3 + 1] = y;
+      particlePositions[i * 3 + 2] = z;
 
-      // Save attributes for runtime animation
+      // Drift velocities (fluid drifting across canvas)
       particleData.push({
-        phi,
-        theta,
-        baseRadius,
-        speed: 0.8 + Math.random() * 1.4,
-        offset: Math.random() * Math.PI * 2
+        driftX: (Math.random() - 0.5) * 0.012,
+        driftY: (0.01 + Math.random() * 0.018), // mostly drifting upwards
+        driftZ: (Math.random() - 0.5) * 0.008,
+        pulseOffset: Math.random() * Math.PI * 2,
+        pulseSpeed: 1.0 + Math.random() * 2.0
       });
 
-      // Color mix
-      const colorRatio = Math.random();
+      // Color mixing (RCB Crimson, gold, and deep accent reds)
+      const rand = Math.random();
       let mixColor;
-      if (colorRatio > 0.6) {
-        mixColor = rcbGold;
-      } else if (colorRatio > 0.15) {
-        mixColor = rcbRed;
+      if (rand > 0.65) {
+        mixColor = colorGold;
+      } else if (rand > 0.2) {
+        mixColor = colorCrimson;
       } else {
-        mixColor = darkGrey;
+        mixColor = colorBlackishRed;
       }
 
-      colors[i * 3] = mixColor.r;
-      colors[i * 3 + 1] = mixColor.g;
-      colors[i * 3 + 2] = mixColor.b;
+      particleColors[i * 3] = mixColor.r;
+      particleColors[i * 3 + 1] = mixColor.g;
+      particleColors[i * 3 + 2] = mixColor.b;
     }
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
 
-    const material = new THREE.PointsMaterial({
-      size: 0.15,
+    // PointsMaterial without texture renders as square pixels
+    const particleMaterial = new THREE.PointsMaterial({
+      size: 0.16,
       vertexColors: true,
       transparent: true,
       opacity: 0.85,
       blending: THREE.AdditiveBlending
     });
 
-    const particleSystem = new THREE.Points(geometry, material);
+    const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
     mainGroup.add(particleSystem);
 
-    // 3. Orbital Rings (glowing orbits representing platforms)
+    // 3. 3 Tilted 3D Elliptical Orbital Rings
+    const createEllipsePoints = (a, b, segments = 128) => {
+      const points = [];
+      for (let i = 0; i <= segments; i++) {
+        const theta = (i / segments) * Math.PI * 2;
+        const x = a * Math.cos(theta);
+        const y = b * Math.sin(theta);
+        points.push(new THREE.Vector3(x, y, 0));
+      }
+      return points;
+    };
+
     const rings = [];
-    const ringRadii = [3.8, 5.0, 6.4, 7.8];
-    const ringColors = ['#ffffff', '#00d2ff', '#ff1e27', '#ecb22e'];
-    
-    ringRadii.forEach((radius, index) => {
-      const ringGeom = new THREE.RingGeometry(radius - 0.025, radius + 0.025, 64);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: ringColors[index],
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.28,
-        blending: THREE.AdditiveBlending
-      });
-      const mesh = new THREE.Mesh(ringGeom, ringMat);
+    // Configuration for the 3 rings
+    const ringConfigs = [
+      { a: 5.2, b: 3.2, color: '#E32636', rotX: 1.2, rotY: 0.4, speedZ: 0.006 },
+      { a: 6.5, b: 4.0, color: '#FFD700', rotX: -0.9, rotY: 0.7, speedZ: -0.005 },
+      { a: 7.8, b: 4.8, color: '#E32636', rotX: 0.4, rotY: -1.0, speedZ: 0.004 }
+    ];
+
+    ringConfigs.forEach((config) => {
+      const points = createEllipsePoints(config.a, config.b);
+      const ringGeometry = new THREE.BufferGeometry().setFromPoints(points);
       
-      // Setup distinct orbital planes
-      mesh.rotation.x = Math.random() * Math.PI;
-      mesh.rotation.y = Math.random() * Math.PI;
-      mainGroup.add(mesh);
+      const ringMaterial = new THREE.LineBasicMaterial({
+        color: config.color,
+        transparent: true,
+        opacity: 0.48,
+        blending: THREE.AdditiveBlending,
+        linewidth: 1
+      });
+
+      const lineLoop = new THREE.LineLoop(ringGeometry, ringMaterial);
+      
+      // Apply initial 3D tilt
+      lineLoop.rotation.x = config.rotX;
+      lineLoop.rotation.y = config.rotY;
+      
+      mainGroup.add(lineLoop);
       
       rings.push({
-        mesh,
-        speedX: 0.0015 + index * 0.0006,
-        speedY: 0.001 + index * 0.0004,
-        speedZ: 0.002 + index * 0.0008,
+        mesh: lineLoop,
+        speedZ: config.speedZ
       });
     });
 
-    // 4. Central Glowing Core
-    const coreGeom = new THREE.SphereGeometry(1.6, 32, 32);
-    const coreMat = new THREE.MeshBasicMaterial({
-      color: '#ff1e27',
+    // 4. Central Glowing Orb with intense radial glow and specular highlight
+    // Base Orb
+    const coreGeometry = new THREE.SphereGeometry(1.6, 64, 64);
+    const coreMaterial = new THREE.MeshPhongMaterial({
+      color: '#E32636',
+      emissive: '#2b0004',
+      specular: '#FFD700', // Gold specular highlight
+      shininess: 95,
       transparent: true,
-      opacity: 0.18,
-      blending: THREE.AdditiveBlending
+      opacity: 0.95
     });
-    const core = new THREE.Mesh(coreGeom, coreMat);
-    mainGroup.add(core);
+    const coreOrb = new THREE.Mesh(coreGeometry, coreMaterial);
+    mainGroup.add(coreOrb);
 
-    // Glow Aura (Inner & Outer)
-    const coreGlowGeom = new THREE.SphereGeometry(1.9, 32, 32);
-    const coreGlowMat = new THREE.MeshBasicMaterial({
-      color: '#ecb22e',
-      transparent: true,
-      opacity: 0.1,
-      blending: THREE.AdditiveBlending,
-      side: THREE.BackSide
+    // Concentric glowing shells for intense dramatic radial glow (Glow level 7/10)
+    const glowShells = [];
+    const glowSpecs = [
+      { size: 1.8, color: '#FFD700', baseOpacity: 0.42 }, // Inner gold glow
+      { size: 2.3, color: '#E32636', baseOpacity: 0.28 }, // Mid red glow
+      { size: 3.0, color: '#E32636', baseOpacity: 0.14 }  // Outer soft red corona
+    ];
+
+    glowSpecs.forEach((spec) => {
+      const geom = new THREE.SphereGeometry(spec.size, 32, 32);
+      const mat = new THREE.MeshBasicMaterial({
+        color: spec.color,
+        transparent: true,
+        opacity: spec.baseOpacity,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide
+      });
+      const shellMesh = new THREE.Mesh(geom, mat);
+      mainGroup.add(shellMesh);
+      glowShells.push({
+        mesh: shellMesh,
+        baseScale: 1.0,
+        baseOpacity: spec.baseOpacity
+      });
     });
-    const coreGlow = new THREE.Mesh(coreGlowGeom, coreGlowMat);
-    mainGroup.add(coreGlow);
-
-    // 5. Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
-    scene.add(ambientLight);
-
-    const pointLight = new THREE.PointLight('#ff1e27', 1.8, 100);
-    pointLight.position.set(0, 0, 0);
-    scene.add(pointLight);
-
-    // Point light for gold highlights
-    const pointLightGold = new THREE.PointLight('#ecb22e', 1.2, 50);
-    pointLightGold.position.set(2, 2, 2);
-    scene.add(pointLightGold);
 
     // Interaction variables
     let mouseX = 0;
@@ -244,7 +224,8 @@ const ThreeCanvas = () => {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Animation loop
+    // Animation variables (Rotation speed level 4/10)
+    const rotationMultiplier = 0.4; // 4/10 speed
     const clock = new THREE.Clock();
     let animationFrameId;
 
@@ -253,60 +234,60 @@ const ThreeCanvas = () => {
 
       const time = clock.getElapsedTime();
 
-      // 1. Natural rotation of main group
-      mainGroup.rotation.y = time * 0.04 + targetX * 0.35;
-      mainGroup.rotation.x = 0.1 + targetY * 0.25 - scrollY * 0.0004;
+      // Slow elegant base rotation (4/10 level)
+      mainGroup.rotation.y = time * 0.03 * rotationMultiplier + targetX * 0.25;
+      mainGroup.rotation.x = 0.08 + targetY * 0.15 - scrollY * 0.0003;
+      mainGroup.position.y = -scrollY * 0.004; // subtle scroll parallax shift
 
-      // Apply vertical drift on scroll (scroll parallax)
-      mainGroup.position.y = -scrollY * 0.005;
-
-      // 2. Slow rotation of background starry cosmos
-      starSystem.rotation.y = time * 0.008;
-      starSystem.rotation.x = time * 0.004;
-
-      // 3. Update individual particle positions (breathing and swirling effect)
-      const positionsArr = geometry.attributes.position.array;
+      // Drift floating square pixel particles
+      const positionsArr = particleGeometry.attributes.position.array;
       for (let i = 0; i < particleCount; i++) {
-        const p = particleData[i];
-        // breathing radius
-        const r = p.baseRadius + Math.sin(time * p.speed + p.offset) * 0.25;
-        // swirling angle over time
-        const swirlTheta = p.theta + time * 0.06;
+        const data = particleData[i];
+        
+        // Update positions linearly by drift velocities
+        positionsArr[i * 3] += data.driftX;
+        positionsArr[i * 3 + 1] += data.driftY;
+        positionsArr[i * 3 + 2] += data.driftZ;
 
-        positionsArr[i * 3] = r * Math.sin(p.phi) * Math.cos(swirlTheta);
-        positionsArr[i * 3 + 1] = r * Math.sin(p.phi) * Math.sin(swirlTheta);
-        positionsArr[i * 3 + 2] = r * Math.cos(p.phi);
+        // Wrap around boundaries
+        if (positionsArr[i * 3] > 11) positionsArr[i * 3] = -11;
+        if (positionsArr[i * 3] < -11) positionsArr[i * 3] = 11;
+        if (positionsArr[i * 3 + 1] > 11) positionsArr[i * 3 + 1] = -11;
+        if (positionsArr[i * 3 + 1] < -11) positionsArr[i * 3 + 1] = 11;
+        if (positionsArr[i * 3 + 2] > 10) positionsArr[i * 3 + 2] = -10;
+        if (positionsArr[i * 3 + 2] < -10) positionsArr[i * 3 + 2] = 10;
       }
-      geometry.attributes.position.needsUpdate = true;
+      particleGeometry.attributes.position.needsUpdate = true;
 
-      // 4. Rotate orbital rings on different axes
-      rings.forEach((r, index) => {
-        r.mesh.rotation.z += r.speedZ;
-        r.mesh.rotation.x += Math.sin(time * 0.15 + index) * 0.0005;
-        r.mesh.rotation.y += Math.cos(time * 0.15 + index) * 0.0005;
+      // Rotate tilted elliptical rings (medium fluid speed, 4/10)
+      rings.forEach((ring) => {
+        ring.mesh.rotation.z += ring.speedZ * rotationMultiplier;
       });
 
-      // 5. Pulsing central core and glow
-      const corePulse = 1.0 + Math.sin(time * 1.8) * 0.07;
-      core.scale.set(corePulse, corePulse, corePulse);
-      
-      const glowPulse = 1.0 + Math.cos(time * 1.5) * 0.09;
-      coreGlow.scale.set(glowPulse, glowPulse, glowPulse);
+      // Pulse central core and radial glows (Glow level 7/10)
+      const corePulse = 1.0 + Math.sin(time * 1.5) * 0.04;
+      coreOrb.scale.set(corePulse, corePulse, corePulse);
 
-      // 6. Point lights pulsing
-      pointLight.intensity = 1.6 + Math.sin(time * 2.5) * 0.5;
-      pointLightGold.intensity = 1.0 + Math.cos(time * 2.0) * 0.3;
+      glowShells.forEach((shell, index) => {
+        const wave = Math.sin(time * 1.8 + index * 0.5);
+        const scaleVal = 1.0 + wave * 0.06;
+        shell.mesh.scale.set(scaleVal, scaleVal, scaleVal);
+        shell.mesh.material.opacity = shell.baseOpacity * (0.85 + wave * 0.15);
+      });
 
-      // Smooth camera follow mouse interpolation
-      targetX += (mouseX - targetX) * 0.05;
-      targetY += (mouseY - targetY) * 0.05;
+      // Subtle light source pulse
+      pointLightRed.intensity = 3.0 + Math.sin(time * 2.0) * 0.6;
+      pointLightGold.intensity = 1.8 + Math.cos(time * 1.6) * 0.4;
+
+      // Smooth cursor parallax interpolation
+      targetX += (mouseX - targetX) * 0.045;
+      targetY += (mouseY - targetY) * 0.045;
 
       renderer.render(scene, camera);
     };
 
     animate();
 
-    // Resize Handler
     const handleResize = () => {
       if (!containerRef.current) return;
       const newWidth = containerRef.current.clientWidth;
@@ -320,7 +301,6 @@ const ThreeCanvas = () => {
 
     window.addEventListener('resize', handleResize);
 
-    // Clean up WebGL resources and event listeners
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('mousemove', handleMouseMove);
@@ -329,22 +309,18 @@ const ThreeCanvas = () => {
       if (containerRef.current && renderer.domElement) {
         containerRef.current.removeChild(renderer.domElement);
       }
-      
-      // Dispose Geometries
-      starGeometry.dispose();
-      geometry.dispose();
-      coreGeom.dispose();
-      coreGlowGeom.dispose();
+
+      particleGeometry.dispose();
+      particleMaterial.dispose();
+      coreGeometry.dispose();
+      coreMaterial.dispose();
       rings.forEach(r => r.mesh.geometry.dispose());
-
-      // Dispose Materials
-      starMaterial.dispose();
-      material.dispose();
-      coreMat.dispose();
-      coreGlowMat.dispose();
       rings.forEach(r => r.mesh.material.dispose());
+      glowShells.forEach(s => {
+        s.mesh.geometry.dispose();
+        s.mesh.material.dispose();
+      });
 
-      // Clear main group
       mainGroup.clear();
       scene.clear();
     };
@@ -356,7 +332,7 @@ const ThreeCanvas = () => {
         <div className="glow-orb orb-1"></div>
         <div className="glow-orb orb-2"></div>
         <div className="three-overlay-text">
-          <span>STATS UNIVERSE</span>
+          <span>LEGACY BACKGROUND</span>
           <p>Touch & Scroll to Explore</p>
         </div>
       </div>
@@ -374,11 +350,24 @@ const ThreeCanvas = () => {
         top: 0,
         left: 0,
         zIndex: 0,
-        pointerEvents: 'none', // none so we do not block background clicking
+        pointerEvents: 'none',
         overflow: 'hidden'
       }}
     >
-      <div className="three-overlay-text">
+      {/* Subtle vignette overlay on top of WebGL canvas for the red vignette requirement */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          background: 'radial-gradient(circle, rgba(0,0,0,0) 45%, rgba(20,0,2,0.35) 80%, rgba(0,0,0,0.96) 100%)',
+          zIndex: 1
+        }}
+      />
+      <div className="three-overlay-text" style={{ zIndex: 2 }}>
         <span>3D STATS UNIVERSE</span>
         <p className="pulse">Move Cursor to Orbit</p>
       </div>
