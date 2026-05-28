@@ -392,7 +392,7 @@ h1, h2, h3, h4 {
 .jersey-glass {
   width: 100%;
   height: 100%;
-  padding: 0;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -415,7 +415,7 @@ h1, h2, h3, h4 {
   justify-content: space-between;
   align-items: center;
   transform: translateZ(30px);
-  padding: 1.5rem 1.5rem 0.5rem;
+  padding: 0 0 0.5rem;
   position: relative;
   z-index: 3;
 }
@@ -440,21 +440,21 @@ h1, h2, h3, h4 {
 }
 
 .jersey-image-container {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
+  height: 240px;
   width: 100%;
-  height: 100%;
-  transform: translateZ(10px);
+  transform: translateZ(25px);
+  border-radius: 12px;
   overflow: hidden;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
 }
 
 .jersey-card-photo {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 25%;
+  object-position: center top;
   transition: transform 0.5s ease;
 }
 
@@ -467,11 +467,9 @@ h1, h2, h3, h4 {
   height: 100%;
   background: linear-gradient(
     to bottom,
-    rgba(6, 6, 8, 0.7) 0%,
-    rgba(6, 6, 8, 0) 30%,
-    rgba(6, 6, 8, 0) 50%,
-    rgba(6, 6, 8, 0.95) 90%,
-    #060608 100%
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0.25) 100%
   );
   pointer-events: none;
 }
@@ -483,7 +481,7 @@ h1, h2, h3, h4 {
 .jersey-details {
   text-align: center;
   transform: translateZ(35px);
-  padding: 0.5rem 1.5rem 2rem;
+  padding: 0.5rem 0 0;
   position: relative;
   z-index: 3;
 }
@@ -1686,10 +1684,13 @@ h1, h2, h3, h4 {
     height: 385px;
   }
   .jersey-brand {
-    padding: 1.2rem 1.2rem 0.4rem;
+    padding: 0 0 0.4rem;
+  }
+  .jersey-image-container {
+    height: 190px;
   }
   .jersey-details {
-    padding: 0.4rem 1.2rem 1.5rem;
+    padding: 0.4rem 0 0;
   }
   .jersey-title {
     font-size: 1rem;
